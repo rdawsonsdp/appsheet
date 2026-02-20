@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Template Designer</title>
+
+  <!-- CodeMirror 5 via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
+
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    /* Prevent body scroll — layout is self-contained */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      padding-bottom: 0;
+    }
+    /* CodeMirror must fill the editor-wrap */
+    .CodeMirror {
+      height: 100% !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav" role="banner">
+    <a href="/index.html" class="nav-link" aria-label="Back to Orders">← Orders</a>
+    <h1>Template Designer</h1>
+    <div style="width:80px"></div><!-- spacer for centering -->
+  </nav>
+
+  <!-- Designer Layout (tabs on mobile, split on large screens) -->
+  <div class="designer-layout">
+
+    <!-- Tab Bar (mobile) -->
+    <div class="tab-bar" role="tablist" aria-label="Designer tabs">
+      <button
+        class="tab-btn active"
+        id="tab-edit"
+        role="tab"
+        aria-selected="true"
+        aria-controls="panel-edit"
+        data-tab="edit"
+      >Edit</button>
+      <button
+        class="tab-btn"
+        id="tab-preview"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panel-preview"
+        data-tab="preview"
+      >Preview</button>
+    </div>
+
+    <!-- Edit Panel -->
+    <div
+      class="tab-panel edit-panel active"
+      id="panel-edit"
+      role="tabpanel"
+      aria-labelledby="tab-edit"
+    >
+      <div class="editor-wrap" id="editorWrap"></div>
+
+      <div class="editor-toolbar">
+        <button class="btn-save" id="saveBtn" type="button">Save</button>
+        <button class="btn-reset" id="resetBtn" type="button">Reset</button>
+        <button class="btn-fields" id="fieldsBtn" type="button">Fields ▾</button>
+        <span class="save-feedback" id="saveFeedback" hidden aria-live="polite">✓ Saved!</span>
+      </div>
+    </div>
+
+    <!-- Preview Panel -->
+    <div
+      class="tab-panel preview-panel"
+      id="panel-preview"
+      role="tabpanel"
+      aria-labelledby="tab-preview"
+      hidden
+    >
+      <div class="preview-wrap">
+        <div class="preview-inner" id="previewInner">
+          <p style="color:#999;font-style:italic;">Switch to Preview to render the template.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.designer-layout -->
+
+  <!-- Available Fields Modal (bottom sheet) -->
+  <div class="fields-modal-backdrop" id="fieldsModalBackdrop" hidden role="dialog" aria-modal="true" aria-labelledby="fieldsModalTitle">
+    <div class="fields-modal">
+      <div class="fields-modal-header">
+        <h2 id="fieldsModalTitle">Available Fields</h2>
+        <button class="btn-close-modal" id="closeFieldsModal" aria-label="Close fields panel">✕</button>
+      </div>
+      <div class="fields-list" id="fieldsList" role="list">
+        <p style="color:#999;padding:16px 0;">Loading fields…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CodeMirror JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+
+  <script src="/designer.js"></script>
+</body>
+</html>

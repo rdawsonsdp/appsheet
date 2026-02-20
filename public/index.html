@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Orders — Print</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav" role="banner">
+    <h1>Orders</h1>
+    <a href="/designer.html" class="nav-link" aria-label="Open Template Designer">
+      ⚙ Designer
+    </a>
+  </nav>
+
+  <!-- Main Content -->
+  <main role="main">
+
+    <!-- Collapsible Filter Panel -->
+    <section class="filter-section" aria-label="Order filters">
+      <button
+        class="filter-toggle"
+        aria-expanded="true"
+        aria-controls="filterPanel"
+        id="filterToggleBtn"
+      >
+        <span>
+          🔍 Filters
+          <span class="filter-badge" id="filterBadge" hidden>0</span>
+        </span>
+        <span class="arrow" aria-hidden="true">▼</span>
+      </button>
+
+      <div class="filter-panel" id="filterPanel" role="region" aria-labelledby="filterToggleBtn">
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label for="dateFrom">Pickup Date From</label>
+            <input type="date" id="dateFrom" aria-label="Filter from date">
+          </div>
+          <div class="filter-group">
+            <label for="dateTo">Pickup Date To</label>
+            <input type="date" id="dateTo" aria-label="Filter to date">
+          </div>
+          <div class="filter-group">
+            <label for="statusSelect">Status</label>
+            <select id="statusSelect" aria-label="Filter by status">
+              <option value="">All Statuses</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="customerSearch">Customer</label>
+            <input type="search" id="customerSearch" placeholder="Search…" aria-label="Search by customer name">
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn-clear" id="clearFiltersBtn" type="button">Clear</button>
+          <button class="btn-search" id="searchBtn" type="button">📋 Get Orders</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders Header -->
+    <div class="orders-header" role="toolbar" aria-label="Order list controls">
+      <span class="orders-count" id="ordersCount" aria-live="polite"></span>
+      <div class="orders-header-right">
+        <div class="sort-control">
+          <select id="sortField" aria-label="Sort by field">
+            <option value="Due Pickup Date">Pickup Date</option>
+            <option value="Order Name">Customer</option>
+            <option value="Status">Status</option>
+            <option value="Order Count">Items</option>
+            <option value="Due Pickup Time">Pickup Time</option>
+            <option value="Total">Total</option>
+          </select>
+          <button class="sort-dir-btn" id="sortDirBtn" aria-label="Toggle sort direction" title="Toggle sort direction">↑</button>
+        </div>
+        <button class="select-all-btn" id="selectAllBtn" type="button">Select All</button>
+      </div>
+    </div>
+
+    <!-- Order Cards -->
+    <div class="orders-list" id="ordersList" role="list" aria-label="Orders">
+      <div class="state-msg" id="loadingMsg">
+        <div class="spinner" role="status" aria-label="Loading"></div>
+        <p>Loading orders…</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Fixed Bottom Action Bar -->
+  <div class="action-bar" role="toolbar" aria-label="Print actions">
+    <span class="action-bar-count" id="actionBarCount" aria-live="polite">
+      <strong>0</strong> selected
+    </span>
+    <button
+      class="btn-print"
+      id="printBtn"
+      type="button"
+      disabled
+      aria-label="Print selected orders"
+    >
+      🖨 Print Selected
+    </button>
+  </div>
+
+  <!-- Hidden print container (rendered at print time) -->
+  <div id="printContainer" aria-hidden="true"></div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-backdrop" id="orderModalBackdrop" hidden role="dialog" aria-modal="true" aria-labelledby="modalOrderName">
+    <div class="modal-sheet" id="orderModal">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-title" id="modalOrderName"></span>
+          <span class="modal-count-badge" id="modalCount"></span>
+        </div>
+        <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Status + key fields -->
+      <div class="modal-meta" id="modalMeta"></div>
+
+      <!-- Line items -->
+      <div class="modal-items-wrap" id="modalItemsWrap"></div>
+
+      <!-- Notes -->
+      <div class="modal-notes" id="modalNotes" hidden></div>
+
+      <!-- Footer actions -->
+      <div class="modal-footer">
+        <button class="modal-btn-select" id="modalSelectBtn" type="button">☐ Select for Print</button>
+        <button class="modal-btn-print" id="modalPrintBtn" type="button">🖨 Print This Order</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
