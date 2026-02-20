@@ -1256,10 +1256,20 @@ main {
     overflow: hidden;
   }
 
-  /* Print-specific resets */
-  * {
+  /* Force plain black & white — strip all colors and backgrounds */
+  .print-order,
+  .print-order * {
+    color: #000 !important;
+    background: transparent !important;
+    background-color: transparent !important;
     box-shadow: none !important;
     text-shadow: none !important;
+  }
+
+  /* Keep table borders black */
+  .slip-items-table th,
+  .slip-items-table td {
+    border-color: #000 !important;
   }
 }
 
@@ -1317,7 +1327,7 @@ main {
 .slip-customer {
   font-size: 16pt;
   font-weight: bold;
-  color: #1a56a0;
+  color: #000;
   margin: 0;
 }
 
