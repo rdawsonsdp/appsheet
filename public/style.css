@@ -1292,19 +1292,16 @@ main {
     display: block !important;
   }
 
-  /* Force every order to fill exactly one letter page */
+  /* Each order starts on a new page; content flows to however many
+     lines it needs — no clipping */
   .print-order {
-    width: 8.5in;
-    height: 11in;
     padding: 0.4in 0.5in;
     box-sizing: border-box;
-    overflow: hidden;
     page-break-after: always;
     break-after: page;
-    /* Re-state the flex layout so the halves still fill the page */
+    page-break-inside: avoid;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
   }
 
   .print-order:last-child {
@@ -1312,9 +1309,16 @@ main {
     break-after: auto;
   }
 
-  /* Prevent either half from overflowing its half of the page */
+  /* Keep the divider from splitting across pages */
+  .slip-divider {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Keep each half together on the same page */
   .slip-half {
-    overflow: hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   /* Force plain black & white — strip all colors and backgrounds */
@@ -1349,14 +1353,10 @@ main {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11pt;
   color: #000;
-  /* Screen preview — padding and flex layout; @media print overrides height/padding */
   padding: 0.4in 0.5in;
-  height: 100vh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
 }
 
 /* Each half (Packing Slip / Bakery Sheet) */
