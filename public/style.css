@@ -218,7 +218,8 @@ main {
   gap: 4px;
 }
 
-.filter-group.full {
+.filter-group.full,
+.filter-group--full {
   grid-column: 1 / -1;
 }
 
@@ -273,6 +274,49 @@ main {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+}
+
+/* Quick-filter chips (row between filter grid and action buttons) */
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  min-height: 36px;
+  white-space: nowrap;
+}
+.chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.chip--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.chip--active:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: #fff;
+}
+.chip:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .btn-clear {
@@ -1274,6 +1318,13 @@ main {
   }
 
   /* Force plain black & white — strip all colors and backgrounds */
+  html,
+  body,
+  #printContainer {
+    background: #fff !important;
+    background-color: #fff !important;
+  }
+
   .print-order,
   .print-order * {
     color: #000 !important;
