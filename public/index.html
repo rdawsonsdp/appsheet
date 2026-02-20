@@ -45,13 +45,21 @@
 
       <div class="filter-panel" id="filterPanel" role="region" aria-labelledby="filterToggleBtn">
         <div class="filter-grid">
-          <div class="filter-group">
+          <div class="filter-group" id="groupDateFrom">
             <label for="dateFrom">Pickup Date From</label>
-            <input type="date" id="dateFrom" aria-label="Filter from date">
+            <input type="date" id="dateFrom" aria-label="Filter pickup date from">
           </div>
-          <div class="filter-group">
+          <div class="filter-group" id="groupDateTo">
             <label for="dateTo">Pickup Date To</label>
-            <input type="date" id="dateTo" aria-label="Filter to date">
+            <input type="date" id="dateTo" aria-label="Filter pickup date to">
+          </div>
+          <div class="filter-group" id="groupOrderDateFrom">
+            <label for="orderDateFrom">Order Date From</label>
+            <input type="date" id="orderDateFrom" aria-label="Filter order date from">
+          </div>
+          <div class="filter-group" id="groupOrderDateTo">
+            <label for="orderDateTo">Order Date To</label>
+            <input type="date" id="orderDateTo" aria-label="Filter order date to">
           </div>
           <div class="filter-group">
             <label for="statusSelect">Status</label>

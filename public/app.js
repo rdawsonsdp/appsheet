@@ -63,6 +63,12 @@ const filterPanel     = document.getElementById('filterPanel');
 const filterBadge     = document.getElementById('filterBadge');
 const dateFrom        = document.getElementById('dateFrom');
 const dateTo          = document.getElementById('dateTo');
+const orderDateFrom   = document.getElementById('orderDateFrom');
+const orderDateTo     = document.getElementById('orderDateTo');
+const groupDateFrom   = document.getElementById('groupDateFrom');
+const groupDateTo     = document.getElementById('groupDateTo');
+const groupOrderDateFrom = document.getElementById('groupOrderDateFrom');
+const groupOrderDateTo   = document.getElementById('groupOrderDateTo');
 const statusSelect    = document.getElementById('statusSelect');
 const customerSearch  = document.getElementById('customerSearch');
 const clearFiltersBtn     = document.getElementById('clearFiltersBtn');
@@ -117,18 +123,30 @@ async function fetchOrders() {
 // Filter Logic
 // ----------------------------------------------------------------
 function applyFilters() {
-  const from     = dateFrom.value;
-  const to       = dateTo.value;
-  const status   = statusSelect.value;
-  const customerQ = customerSearch.value.toLowerCase().trim();
+  const pickupFrom = dateFrom.value;
+  const pickupTo   = dateTo.value;
+  const orderFrom  = orderDateFrom.value;
+  const orderTo    = orderDateTo.value;
+  const status     = statusSelect.value;
+  const customerQ  = customerSearch.value.toLowerCase().trim();
+
+  const usePickup = pickupFrom || pickupTo;
+  const useOrder  = orderFrom  || orderTo;
 
   filteredOrders = allOrders.filter(order => {
-    // AppSheet returns MM/DD/YYYY — convert to YYYY-MM-DD for comparison with date input
-    const date = toISODate(order['Due Pickup Date'] || order['Order Date'] || '');
     const name = (order['Order Name'] || order['Customer Name'] || '').toLowerCase();
 
-    return (!from      || date >= from)
-        && (!to        || date <= to)
+    // Date filtering — only one group active at a time (mutual exclusion enforced in UI)
+    let dateMatch = true;
+    if (usePickup) {
+      const d = toISODate(order['Due Pickup Date'] || '');
+      dateMatch = (!pickupFrom || d >= pickupFrom) && (!pickupTo || d <= pickupTo);
+    } else if (useOrder) {
+      const d = toISODate(order['Order Date'] || '');
+      dateMatch = (!orderFrom || d >= orderFrom) && (!orderTo || d <= orderTo);
+    }
+
+    return dateMatch
         && (!status    || order['Status'] === status)
         && (!customerQ || name.includes(customerQ));
   });
@@ -171,9 +189,11 @@ function sortOrders() {
 
 function countActiveFilters() {
   let n = 0;
-  if (dateFrom.value)        n++;
-  if (dateTo.value)          n++;
-  if (statusSelect.value)    n++;
+  if (dateFrom.value)            n++;
+  if (dateTo.value)              n++;
+  if (orderDateFrom.value)       n++;
+  if (orderDateTo.value)         n++;
+  if (statusSelect.value)        n++;
   if (customerSearch.value.trim()) n++;
   return n;
 }
@@ -187,9 +207,35 @@ function updateFilterBadge() {
 function clearFilters() {
   dateFrom.value       = '';
   dateTo.value         = '';
+  orderDateFrom.value  = '';
+  orderDateTo.value    = '';
   statusSelect.value   = '';
   customerSearch.value = '';
+  syncDateGroupExclusion();
   applyFilters();
+}
+
+// ----------------------------------------------------------------
+// Mutual exclusion: Pickup Date ↔ Order Date
+// When either group has a value, the other group is disabled + grayed.
+// ----------------------------------------------------------------
+function syncDateGroupExclusion() {
+  const pickupActive = !!(dateFrom.value || dateTo.value);
+  const orderActive  = !!(orderDateFrom.value || orderDateTo.value);
+
+  // Disable Order Date group when Pickup has values
+  const disableOrder = pickupActive;
+  orderDateFrom.disabled = disableOrder;
+  orderDateTo.disabled   = disableOrder;
+  groupOrderDateFrom.classList.toggle('filter-group--disabled', disableOrder);
+  groupOrderDateTo.classList.toggle('filter-group--disabled', disableOrder);
+
+  // Disable Pickup Date group when Order Date has values
+  const disablePickup = orderActive;
+  dateFrom.disabled = disablePickup;
+  dateTo.disabled   = disablePickup;
+  groupDateFrom.classList.toggle('filter-group--disabled', disablePickup);
+  groupDateTo.classList.toggle('filter-group--disabled', disablePickup);
 }
 
 function populateStatusFilter() {
@@ -244,6 +290,7 @@ function renderOrders() {
         </div>
         <span class="status-badge ${statusClass}">${escHtml(status)}</span>
       </div>
+      <div class="card-order-id">${escHtml(order['OrderID'] || '')}</div>
       <div class="card-meta">
         <span>${escHtml(formatDate(order['Due Pickup Date'] || order['Order Date']))}</span>
         ${order['Due Pickup Time'] ? `<span class="card-meta-sep">·</span><span>${escHtml(order['Due Pickup Time'])}</span>` : ''}
@@ -420,9 +467,19 @@ function bindFilterEvents() {
     filterPanel.hidden = expanded;
   });
 
-  // Live filtering only applies after orders are loaded
-  dateFrom.addEventListener('change',      () => { if (allOrders.length) applyFilters(); });
-  dateTo.addEventListener('change',        () => { if (allOrders.length) applyFilters(); });
+  // Live filtering — also enforce mutual exclusion on date groups
+  const onPickupChange = () => {
+    syncDateGroupExclusion();
+    if (allOrders.length) applyFilters();
+  };
+  const onOrderDateChange = () => {
+    syncDateGroupExclusion();
+    if (allOrders.length) applyFilters();
+  };
+  dateFrom.addEventListener('change',      onPickupChange);
+  dateTo.addEventListener('change',        onPickupChange);
+  orderDateFrom.addEventListener('change', onOrderDateChange);
+  orderDateTo.addEventListener('change',   onOrderDateChange);
   statusSelect.addEventListener('change',  () => { if (allOrders.length) applyFilters(); });
   customerSearch.addEventListener('input', () => { if (allOrders.length) applyFilters(); });
 
@@ -443,7 +500,7 @@ function bindFilterEvents() {
   });
 
   // Allow Enter key in any filter input to trigger fetch/filter
-  [dateFrom, dateTo, customerSearch].forEach(el => {
+  [dateFrom, dateTo, orderDateFrom, orderDateTo, customerSearch].forEach(el => {
     el.addEventListener('keydown', e => {
       if (e.key === 'Enter') fetchOrders();
     });
