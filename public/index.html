@@ -68,10 +68,24 @@
             </select>
           </div>
           <div class="filter-group">
+            <label for="orderTypeSelect">Order Type</label>
+            <select id="orderTypeSelect" aria-label="Filter by order type">
+              <option value="">All Types</option>
+            </select>
+          </div>
+          <div class="filter-group filter-group--full">
             <label for="customerSearch">Customer</label>
             <input type="search" id="customerSearch" placeholder="Search…" aria-label="Search by customer name">
           </div>
         </div>
+
+        <!-- Quick-filter chips -->
+        <div class="filter-chips">
+          <button class="chip" id="chipLocalDelivery" type="button" data-active="false">
+            🚚 Local Delivery
+          </button>
+        </div>
+
         <div class="filter-actions">
           <button class="btn-clear" id="clearFiltersBtn" type="button">Clear</button>
           <button class="btn-search" id="searchBtn" type="button">📋 Get Orders</button>

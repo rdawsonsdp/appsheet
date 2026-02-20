@@ -69,9 +69,11 @@ const groupDateFrom   = document.getElementById('groupDateFrom');
 const groupDateTo     = document.getElementById('groupDateTo');
 const groupOrderDateFrom = document.getElementById('groupOrderDateFrom');
 const groupOrderDateTo   = document.getElementById('groupOrderDateTo');
-const statusSelect    = document.getElementById('statusSelect');
-const customerSearch  = document.getElementById('customerSearch');
-const clearFiltersBtn     = document.getElementById('clearFiltersBtn');
+const statusSelect      = document.getElementById('statusSelect');
+const orderTypeSelect   = document.getElementById('orderTypeSelect');
+const customerSearch    = document.getElementById('customerSearch');
+const chipLocalDelivery = document.getElementById('chipLocalDelivery');
+const clearFiltersBtn   = document.getElementById('clearFiltersBtn');
 const searchBtn           = document.getElementById('searchBtn');
 const selectAllBtn        = document.getElementById('selectAllBtn');
 const sortFieldEl         = document.getElementById('sortField');
@@ -111,6 +113,7 @@ async function fetchOrders() {
 
     allOrders = Array.isArray(data) ? data : [];
     populateStatusFilter();
+    populateOrderTypeFilter();
     applyFilters();
   } catch (err) {
     showError(err.message);
@@ -122,12 +125,17 @@ async function fetchOrders() {
 // ----------------------------------------------------------------
 // Filter Logic
 // ----------------------------------------------------------------
+// Local-delivery types (used by chip and filter logic)
+const LOCAL_DELIVERY_TYPES = new Set(['Delivery', 'Local Delivery Order']);
+
 function applyFilters() {
   const pickupFrom = dateFrom.value;
   const pickupTo   = dateTo.value;
   const orderFrom  = orderDateFrom.value;
   const orderTo    = orderDateTo.value;
   const status     = statusSelect.value;
+  const orderType  = orderTypeSelect.value;
+  const chipActive = chipLocalDelivery.dataset.active === 'true';
   const customerQ  = customerSearch.value.toLowerCase().trim();
 
   const usePickup = pickupFrom || pickupTo;
@@ -136,7 +144,7 @@ function applyFilters() {
   filteredOrders = allOrders.filter(order => {
     const name = (order['Order Name'] || order['Customer Name'] || '').toLowerCase();
 
-    // Date filtering — only one group active at a time (mutual exclusion enforced in UI)
+    // Date filtering — only one group active at a time
     let dateMatch = true;
     if (usePickup) {
       const d = toISODate(order['Due Pickup Date'] || '');
@@ -146,7 +154,16 @@ function applyFilters() {
       dateMatch = (!orderFrom || d >= orderFrom) && (!orderTo || d <= orderTo);
     }
 
+    // Order type: chip overrides dropdown (both Delivery + Local Delivery Order)
+    let typeMatch = true;
+    if (chipActive) {
+      typeMatch = LOCAL_DELIVERY_TYPES.has(order['Order Type']);
+    } else if (orderType) {
+      typeMatch = order['Order Type'] === orderType;
+    }
+
     return dateMatch
+        && typeMatch
         && (!status    || order['Status'] === status)
         && (!customerQ || name.includes(customerQ));
   });
@@ -189,12 +206,14 @@ function sortOrders() {
 
 function countActiveFilters() {
   let n = 0;
-  if (dateFrom.value)            n++;
-  if (dateTo.value)              n++;
-  if (orderDateFrom.value)       n++;
-  if (orderDateTo.value)         n++;
-  if (statusSelect.value)        n++;
-  if (customerSearch.value.trim()) n++;
+  if (dateFrom.value)                        n++;
+  if (dateTo.value)                          n++;
+  if (orderDateFrom.value)                   n++;
+  if (orderDateTo.value)                     n++;
+  if (statusSelect.value)                    n++;
+  if (orderTypeSelect.value)                 n++;
+  if (chipLocalDelivery.dataset.active === 'true') n++;
+  if (customerSearch.value.trim())           n++;
   return n;
 }
 
@@ -205,12 +224,14 @@ function updateFilterBadge() {
 }
 
 function clearFilters() {
-  dateFrom.value       = '';
-  dateTo.value         = '';
-  orderDateFrom.value  = '';
-  orderDateTo.value    = '';
-  statusSelect.value   = '';
-  customerSearch.value = '';
+  dateFrom.value          = '';
+  dateTo.value            = '';
+  orderDateFrom.value     = '';
+  orderDateTo.value       = '';
+  statusSelect.value      = '';
+  orderTypeSelect.value   = '';
+  customerSearch.value    = '';
+  setChip(chipLocalDelivery, false);
   syncDateGroupExclusion();
   applyFilters();
 }
@@ -240,7 +261,6 @@ function syncDateGroupExclusion() {
 
 function populateStatusFilter() {
   const statuses = [...new Set(allOrders.map(o => o['Status']).filter(Boolean))].sort();
-  // Keep the "All" option
   statusSelect.innerHTML = '<option value="">All Statuses</option>';
   statuses.forEach(s => {
     const opt = document.createElement('option');
@@ -248,6 +268,26 @@ function populateStatusFilter() {
     opt.textContent = s;
     statusSelect.appendChild(opt);
   });
+}
+
+function populateOrderTypeFilter() {
+  const types = [...new Set(allOrders.map(o => o['Order Type']).filter(Boolean))].sort();
+  orderTypeSelect.innerHTML = '<option value="">All Types</option>';
+  types.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    orderTypeSelect.appendChild(opt);
+  });
+}
+
+// ----------------------------------------------------------------
+// Chip helpers
+// ----------------------------------------------------------------
+function setChip(btn, active) {
+  btn.dataset.active = String(active);
+  btn.classList.toggle('chip--active', active);
+  btn.setAttribute('aria-pressed', String(active));
 }
 
 // ----------------------------------------------------------------
@@ -480,8 +520,22 @@ function bindFilterEvents() {
   dateTo.addEventListener('change',        onPickupChange);
   orderDateFrom.addEventListener('change', onOrderDateChange);
   orderDateTo.addEventListener('change',   onOrderDateChange);
-  statusSelect.addEventListener('change',  () => { if (allOrders.length) applyFilters(); });
-  customerSearch.addEventListener('input', () => { if (allOrders.length) applyFilters(); });
+  statusSelect.addEventListener('change',    () => { if (allOrders.length) applyFilters(); });
+  orderTypeSelect.addEventListener('change', () => {
+    // If a specific type is chosen, deactivate the chip so they don't conflict
+    if (orderTypeSelect.value) setChip(chipLocalDelivery, false);
+    if (allOrders.length) applyFilters();
+  });
+  customerSearch.addEventListener('input',   () => { if (allOrders.length) applyFilters(); });
+
+  // Local Delivery chip toggle
+  chipLocalDelivery.addEventListener('click', () => {
+    const nowActive = chipLocalDelivery.dataset.active !== 'true';
+    setChip(chipLocalDelivery, nowActive);
+    // Chip overrides dropdown — clear dropdown when chip activates
+    if (nowActive) orderTypeSelect.value = '';
+    if (allOrders.length) applyFilters();
+  });
 
   clearFiltersBtn.addEventListener('click', clearFilters);
   searchBtn.addEventListener('click', fetchOrders);
