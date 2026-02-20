@@ -53,7 +53,7 @@ const DEFAULT_TEMPLATE = `<!-- ═══ PACKING SLIP (top half) ═══ -->
 let allOrders      = [];
 let filteredOrders = [];
 let selectedIds    = new Set(); // keyed by _RowNumber (string)
-let sortField      = 'Due Pickup Date';
+let sortField      = '_RowNumber';
 let sortAsc        = true;
 
 // ----------------------------------------------------------------
@@ -103,8 +103,19 @@ document.addEventListener('DOMContentLoaded', () => {
   bindFilterEvents();
   bindActionBarEvents();
   bindModalEvents();
-  showIdle(); // don't fetch until user hits "Get Orders"
+  setDefaultFilters();
+  fetchOrders();
 });
+
+function setDefaultFilters() {
+  // Default: today's orders, sorted by entry order (oldest first)
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  orderDateFrom.value = today;
+  orderDateTo.value   = today;
+  sortFieldEl.value   = '_RowNumber';
+  sortField           = '_RowNumber';
+  syncDateGroupExclusion(); // grays out pickup date fields
+}
 
 // ----------------------------------------------------------------
 // Fetch Orders
@@ -198,7 +209,7 @@ function sortOrders() {
     }
 
     // Numeric fields
-    if (sortField === 'Order Count' || sortField === 'Total') {
+    if (sortField === 'Order Count' || sortField === 'Total' || sortField === '_RowNumber') {
       aVal = parseFloat(String(aVal).replace(/[^0-9.-]/g, '')) || 0;
       bVal = parseFloat(String(bVal).replace(/[^0-9.-]/g, '')) || 0;
       return sortAsc ? aVal - bVal : bVal - aVal;
