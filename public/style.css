@@ -1212,7 +1212,15 @@ main {
 }
 
 /* ----------------------------------------------------------------
-   @media print — show ONLY printContainer
+   @page — zero browser margins so .print-order owns all spacing
+   ---------------------------------------------------------------- */
+@page {
+  size: letter portrait;
+  margin: 0;
+}
+
+/* ----------------------------------------------------------------
+   @media print — show ONLY printContainer, one order per page
    ---------------------------------------------------------------- */
 @media print {
   body > *:not(#printContainer) {
@@ -1223,13 +1231,29 @@ main {
     display: block !important;
   }
 
+  /* Force every order to fill exactly one letter page */
   .print-order {
+    width: 8.5in;
+    height: 11in;
+    padding: 0.4in 0.5in;
+    box-sizing: border-box;
+    overflow: hidden;
     page-break-after: always;
-    padding: 0;
+    break-after: page;
+    /* Re-state the flex layout so the halves still fill the page */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   .print-order:last-child {
     page-break-after: auto;
+    break-after: auto;
+  }
+
+  /* Prevent either half from overflowing its half of the page */
+  .slip-half {
+    overflow: hidden;
   }
 
   /* Print-specific resets */
@@ -1247,12 +1271,14 @@ main {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11pt;
   color: #000;
-  padding: 0.35in 0.5in;
-  /* Two halves fill one page */
+  /* Screen preview — padding and flex layout; @media print overrides height/padding */
+  padding: 0.4in 0.5in;
   height: 100vh;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow: hidden;
 }
 
 /* Each half (Packing Slip / Bakery Sheet) */
