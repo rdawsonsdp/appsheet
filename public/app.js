@@ -13,7 +13,10 @@ const DEFAULT_TEMPLATE = `<!-- ═══ PACKING SLIP (top half) ═══ -->
 <div class="slip-half">
   <div class="slip-title">Packing Slip</div>
   <div class="slip-header">
-    <h2 class="slip-customer">{{Order Name}}</h2>
+    <div>
+      <div class="slip-order-id">{{OrderID}}</div>
+      <h2 class="slip-customer">{{Order Name}}</h2>
+    </div>
     <span class="slip-count">{{Order Count}}</span>
   </div>
   <div class="slip-meta">
@@ -30,7 +33,10 @@ const DEFAULT_TEMPLATE = `<!-- ═══ PACKING SLIP (top half) ═══ -->
 <div class="slip-half">
   <div class="slip-title">Bakery Sheet</div>
   <div class="slip-header">
-    <h2 class="slip-customer">{{Order Name}}</h2>
+    <div>
+      <div class="slip-order-id">{{OrderID}}</div>
+      <h2 class="slip-customer">{{Order Name}}</h2>
+    </div>
     <span class="slip-count">{{Order Count}}</span>
   </div>
   <div class="slip-meta">
