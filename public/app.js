@@ -12,6 +12,7 @@
 const DEFAULT_TEMPLATE = `<!-- ═══ PACKING SLIP (top half) ═══ -->
 <div class="slip-half">
   <div class="slip-title">Packing Slip</div>
+  <div class="slip-order-count-banner"><strong>Order Count: {{Order Count}}</strong></div>
   <div class="slip-header">
     <div>
       <div class="slip-order-id">{{OrderID}}</div>
@@ -32,6 +33,7 @@ const DEFAULT_TEMPLATE = `<!-- ═══ PACKING SLIP (top half) ═══ -->
 <!-- ═══ BAKERY SHEET (bottom half) ═══ -->
 <div class="slip-half">
   <div class="slip-title">Bakery Sheet</div>
+  <div class="slip-order-count-banner"><strong>Order Count: {{Order Count}}</strong></div>
   <div class="slip-header">
     <div>
       <div class="slip-order-id">{{OrderID}}</div>
@@ -55,6 +57,7 @@ let filteredOrders = [];
 let selectedIds    = new Set(); // keyed by _RowNumber (string)
 let sortField      = '_RowNumber';
 let sortAsc        = true;
+let currentView    = 'orders'; // 'orders' | 'delivery'
 
 // ----------------------------------------------------------------
 // DOM refs
@@ -78,7 +81,6 @@ const groupOrderDateTo   = document.getElementById('groupOrderDateTo');
 const statusSelect      = document.getElementById('statusSelect');
 const orderTypeSelect   = document.getElementById('orderTypeSelect');
 const customerSearch    = document.getElementById('customerSearch');
-const chipLocalDelivery = document.getElementById('chipLocalDelivery');
 const clearFiltersBtn   = document.getElementById('clearFiltersBtn');
 const searchBtn           = document.getElementById('searchBtn');
 const selectAllBtn        = document.getElementById('selectAllBtn');
@@ -100,6 +102,7 @@ let   modalCurrentId      = null;
 // Boot
 // ----------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+  bindViewTabs();
   bindFilterEvents();
   bindActionBarEvents();
   bindModalEvents();
@@ -118,12 +121,61 @@ function setDefaultFilters() {
 }
 
 // ----------------------------------------------------------------
+// View Tab Switching
+// ----------------------------------------------------------------
+function bindViewTabs() {
+  document.querySelectorAll('.view-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const view = tab.dataset.view;
+      if (view === currentView) return;
+      currentView = view;
+
+      // Toggle active tab
+      document.querySelectorAll('.view-tab').forEach(t => {
+        const isActive = t.dataset.view === view;
+        t.classList.toggle('view-tab--active', isActive);
+        t.setAttribute('aria-selected', String(isActive));
+      });
+
+      // Hide Order Type filter in delivery view
+      const orderTypeGroup = orderTypeSelect.closest('.filter-group');
+      if (orderTypeGroup) orderTypeGroup.hidden = (currentView === 'delivery');
+
+      // Swap "Pickup Date" ↔ "Delivery Date" labels
+      updateDateLabels();
+
+      // Reset selection and re-fetch
+      selectedIds.clear();
+      updateActionBar();
+      fetchOrders();
+    });
+  });
+}
+
+function updateDateLabels() {
+  const isDelivery = currentView === 'delivery';
+  const label = isDelivery ? 'Delivery Date' : 'Pickup Date';
+  // Filter panel labels
+  const fromLabel = groupDateFrom.querySelector('label');
+  const toLabel   = groupDateTo.querySelector('label');
+  if (fromLabel) fromLabel.textContent = `${label} From`;
+  if (toLabel)   toLabel.textContent   = `${label} To`;
+  // Sort dropdown option
+  const pickupOption = sortFieldEl.querySelector('option[value="Due Pickup Date"]');
+  if (pickupOption) pickupOption.textContent = label;
+  // Sort dropdown — Pickup Time label
+  const timeOption = sortFieldEl.querySelector('option[value="Due Pickup Time"]');
+  if (timeOption) timeOption.textContent = isDelivery ? 'Delivery Time' : 'Pickup Time';
+}
+
+// ----------------------------------------------------------------
 // Fetch Orders
 // ----------------------------------------------------------------
 async function fetchOrders() {
   showLoading();
+  const endpoint = currentView === 'delivery' ? '/api/shopify-orders' : '/api/orders';
   try {
-    const res = await fetch('/api/orders');
+    const res = await fetch(endpoint);
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
     if (data?.error) throw new Error(data.error);
@@ -142,9 +194,6 @@ async function fetchOrders() {
 // ----------------------------------------------------------------
 // Filter Logic
 // ----------------------------------------------------------------
-// Local-delivery types (used by chip and filter logic)
-const LOCAL_DELIVERY_TYPES = new Set(['Delivery', 'Local Delivery Order']);
-
 function applyFilters() {
   const pickupFrom = dateFrom.value;
   const pickupTo   = dateTo.value;
@@ -152,7 +201,6 @@ function applyFilters() {
   const orderTo    = orderDateTo.value;
   const status     = statusSelect.value;
   const orderType  = orderTypeSelect.value;
-  const chipActive = chipLocalDelivery.dataset.active === 'true';
   const customerQ  = customerSearch.value.toLowerCase().trim();
 
   const usePickup = pickupFrom || pickupTo;
@@ -171,11 +219,8 @@ function applyFilters() {
       dateMatch = (!orderFrom || d >= orderFrom) && (!orderTo || d <= orderTo);
     }
 
-    // Order type: chip overrides dropdown (both Delivery + Local Delivery Order)
     let typeMatch = true;
-    if (chipActive) {
-      typeMatch = LOCAL_DELIVERY_TYPES.has(order['Order Type']);
-    } else if (orderType) {
+    if (orderType) {
       typeMatch = order['Order Type'] === orderType;
     }
 
@@ -229,7 +274,6 @@ function countActiveFilters() {
   if (orderDateTo.value)                     n++;
   if (statusSelect.value)                    n++;
   if (orderTypeSelect.value)                 n++;
-  if (chipLocalDelivery.dataset.active === 'true') n++;
   if (customerSearch.value.trim())           n++;
   return n;
 }
@@ -248,7 +292,6 @@ function clearFilters() {
   statusSelect.value      = '';
   orderTypeSelect.value   = '';
   customerSearch.value    = '';
-  setChip(chipLocalDelivery, false);
   syncDateGroupExclusion();
   applyFilters();
 }
@@ -454,7 +497,91 @@ function renderOrderForPrint(order) {
     return escHtml(String(order[k] ?? ''));
   });
 
+  if (currentView === 'delivery') {
+    return renderDeliveryForPrint(order, html);
+  }
   return `<div class="print-order">${html}</div>`;
+}
+
+function renderDeliveryForPrint(order, templateHtml) {
+  const name  = escHtml(order['Order Name'] || order['Customer Name'] || '');
+  const addr  = escHtml(order['Delivery Address'] || order['Location'] || '');
+  const phone = escHtml(order['PhoneNumber'] || '');
+  const orderId = escHtml(order['OrderID'] || '');
+  const dueDate = escHtml(formatDate(order['Due Pickup Date'] || ''));
+  const dueTime = escHtml(order['Due Pickup Time'] || '');
+
+  const orderCount = escHtml(order['Order Count'] || '');
+
+  // Page 1: Packing Slip
+  const packingSlip = `<div class="print-order">
+    <div class="delivery-heading">DELIVERY</div>
+    <div class="slip-half">
+      <div class="slip-title">Packing Slip</div>
+      <div class="slip-order-count-banner"><strong>Order Count: ${orderCount}</strong></div>
+      <div class="slip-header">
+        <div>
+          <div class="slip-order-id">${orderId}</div>
+          <h2 class="slip-customer">${name}</h2>
+        </div>
+        <span class="slip-count">${orderCount}</span>
+      </div>
+      <div class="slip-meta">
+        <div><strong>Delivery Date:</strong> ${dueDate}</div>
+        <div><strong>Delivery Time:</strong> ${dueTime}</div>
+        <div><strong>Number:</strong> ${phone}</div>
+      </div>
+      ${buildLineItemsTable(order)}
+    </div>
+  </div>`;
+
+  // Page 2: Driver's Copy — prominent customer box + order summary + delivery notes
+  const deliveryFooter = buildDeliveryFooter(order);
+  const driversCopy = `<div class="print-order">
+    <div class="delivery-heading">DRIVER'S COPY</div>
+    <div class="delivery-customer-box">
+      <div class="delivery-customer-name">${name}</div>
+      ${addr ? `<div class="delivery-customer-addr">${addr}</div>` : ''}
+      ${phone ? `<div class="delivery-customer-phone">&#9742; ${phone}</div>` : ''}
+    </div>
+    <div class="slip-half">
+      <div class="slip-order-count-banner"><strong>Order Count: ${orderCount}</strong></div>
+      <div class="slip-header">
+        <div>
+          <div class="slip-order-id">${orderId}</div>
+          <h2 class="slip-customer">${name}</h2>
+        </div>
+        <span class="slip-count">${orderCount}</span>
+      </div>
+      <div class="slip-meta">
+        <div><strong>Delivery Date:</strong> ${dueDate}</div>
+        <div><strong>Delivery Time:</strong> ${dueTime}</div>
+      </div>
+      ${buildLineItemsTable(order)}
+    </div>
+    ${deliveryFooter}
+  </div>`;
+
+  return packingSlip + driversCopy;
+}
+
+function buildDeliveryFooter(order) {
+  const rows = [];
+
+  // Delivery attributes (date, time, etc.) — address/phone already in top box
+  const attrs = order['Delivery Attributes'] || [];
+  attrs.forEach(a => {
+    if (a.value) {
+      rows.push(`<div><strong>${escHtml(a.name)}:</strong> ${escHtml(a.value)}</div>`);
+    }
+  });
+
+  if (order['Order Notes']) {
+    rows.push(`<div class="delivery-footer-notes"><strong>Delivery Notes:</strong> ${escHtml(order['Order Notes'])}</div>`);
+  }
+
+  if (rows.length === 0) return '';
+  return `<div class="delivery-footer">${rows.join('')}</div>`;
 }
 
 function buildItemsSummary(order) {
@@ -539,20 +666,9 @@ function bindFilterEvents() {
   orderDateTo.addEventListener('change',   onOrderDateChange);
   statusSelect.addEventListener('change',    () => { if (allOrders.length) applyFilters(); });
   orderTypeSelect.addEventListener('change', () => {
-    // If a specific type is chosen, deactivate the chip so they don't conflict
-    if (orderTypeSelect.value) setChip(chipLocalDelivery, false);
     if (allOrders.length) applyFilters();
   });
   customerSearch.addEventListener('input',   () => { if (allOrders.length) applyFilters(); });
-
-  // Local Delivery chip toggle
-  chipLocalDelivery.addEventListener('click', () => {
-    const nowActive = chipLocalDelivery.dataset.active !== 'true';
-    setChip(chipLocalDelivery, nowActive);
-    // Chip overrides dropdown — clear dropdown when chip activates
-    if (nowActive) orderTypeSelect.value = '';
-    if (allOrders.length) applyFilters();
-  });
 
   clearFiltersBtn.addEventListener('click', clearFilters);
   searchBtn.addEventListener('click', fetchOrders);
@@ -604,11 +720,11 @@ function openOrderModal(id) {
     </div>
     <div class="modal-field-grid">
       <div class="modal-field">
-        <span class="modal-field-label">Pickup Date</span>
+        <span class="modal-field-label">${currentView === 'delivery' ? 'Delivery Date' : 'Pickup Date'}</span>
         <span class="modal-field-value">${escHtml(formatDate(order['Due Pickup Date'] || ''))}</span>
       </div>
       <div class="modal-field">
-        <span class="modal-field-label">Pickup Time</span>
+        <span class="modal-field-label">${currentView === 'delivery' ? 'Delivery Time' : 'Pickup Time'}</span>
         <span class="modal-field-value">${escHtml(order['Due Pickup Time'] || '—')}</span>
       </div>
       <div class="modal-field">

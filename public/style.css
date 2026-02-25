@@ -133,6 +133,48 @@ input[type="date"],
 }
 
 /* ----------------------------------------------------------------
+   View Tabs (Orders / Delivery Orders)
+   ---------------------------------------------------------------- */
+.view-tabs {
+  display: flex;
+  gap: 0;
+  background: var(--color-surface);
+  border-bottom: 2px solid var(--color-border);
+  position: sticky;
+  top: 65px; /* below top-nav (62px + 3px accent border) */
+  z-index: 90;
+}
+
+.view-tab {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  text-align: center;
+  margin-bottom: -2px;
+}
+
+.view-tab--active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.view-tab:hover:not(.view-tab--active) {
+  color: var(--color-text);
+}
+
+.view-tab:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* ----------------------------------------------------------------
    Main Content Area
    ---------------------------------------------------------------- */
 main {
@@ -1360,6 +1402,60 @@ main {
   flex-direction: column;
 }
 
+/* DELIVERY heading — prepended to each slip in delivery view */
+.delivery-heading {
+  font-size: 28px;
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+/* Delivery customer box — prominent driver info at top of slip */
+.delivery-customer-box {
+  border: 2.5px solid #000;
+  padding: 8pt 12pt;
+  margin-bottom: 10pt;
+  line-height: 1.4;
+}
+
+.delivery-customer-name {
+  font-size: 16pt;
+  font-weight: 900;
+}
+
+.delivery-customer-addr {
+  font-size: 11pt;
+  font-weight: 600;
+  margin-top: 2pt;
+}
+
+.delivery-customer-phone {
+  font-size: 11pt;
+  font-weight: 600;
+  margin-top: 2pt;
+}
+
+/* Delivery footer — address, notes, attributes at bottom of each slip */
+.delivery-footer {
+  margin-top: 10pt;
+  padding: 8pt 10pt;
+  border: 1.5px solid #000;
+  font-size: 9.5pt;
+  line-height: 1.5;
+}
+
+.delivery-footer strong {
+  font-weight: bold;
+}
+
+.delivery-footer-notes {
+  margin-top: 4pt;
+  padding-top: 4pt;
+  border-top: 1px solid #999;
+}
+
 /* Each half (Packing Slip / Bakery Sheet) */
 .slip-half {
   flex: 1;
@@ -1374,6 +1470,13 @@ main {
   border-top: 1.5px solid #aaa;
   margin: 6pt 0;
   flex-shrink: 0;
+}
+
+/* Order Count banner — bold line at top of each slip */
+.slip-order-count-banner {
+  font-size: 13pt;
+  font-weight: 900;
+  margin-bottom: 4pt;
 }
 
 /* Title — italic bold, top-right */

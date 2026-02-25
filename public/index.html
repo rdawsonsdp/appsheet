@@ -25,6 +25,12 @@
     </a>
   </nav>
 
+  <!-- View Tabs -->
+  <nav class="view-tabs" role="tablist">
+    <button class="view-tab view-tab--active" data-view="orders" role="tab" aria-selected="true">Orders</button>
+    <button class="view-tab" data-view="delivery" role="tab" aria-selected="false">Delivery Orders</button>
+  </nav>
+
   <!-- Main Content -->
   <main role="main">
 
@@ -77,13 +83,6 @@
             <label for="customerSearch">Customer</label>
             <input type="search" id="customerSearch" placeholder="Search…" aria-label="Search by customer name">
           </div>
-        </div>
-
-        <!-- Quick-filter chips -->
-        <div class="filter-chips">
-          <button class="chip" id="chipLocalDelivery" type="button" data-active="false">
-            🚚 Local Delivery
-          </button>
         </div>
 
         <div class="filter-actions">

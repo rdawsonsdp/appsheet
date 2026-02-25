@@ -53,6 +53,17 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    // /api/shopify-orders
+    if (pathname === '/api/shopify-orders') {
+      try {
+        const handler = require('./api/shopify-orders.js');
+        return handler(req, res);
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: e.message }));
+      }
+    }
+
     // /api/orders
     if (pathname === '/api/orders') {
       try {
