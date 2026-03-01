@@ -20,9 +20,10 @@
       <span class="nav-brand-name">Brown Sugar Bakery</span>
       <span class="nav-brand-sub">Orders</span>
     </div>
-    <a href="/designer.html" class="nav-link" aria-label="Open Template Designer">
-      ⚙ Designer
-    </a>
+    <div class="nav-links">
+      <a href="/shift-planning.html" class="nav-link">Shift Planning</a>
+      <a href="/designer.html" class="nav-link">Designer</a>
+    </div>
   </nav>
 
   <!-- View Tabs -->
@@ -33,6 +34,16 @@
 
   <!-- Main Content -->
   <main role="main">
+
+    <!-- Quick Actions -->
+    <div class="quick-actions" id="quickActions">
+      <button class="quick-action-btn" id="todayPickupsBtn" type="button" data-view="orders">
+        Today's Pickups
+      </button>
+      <button class="quick-action-btn" id="todayDeliveriesBtn" type="button" data-view="delivery" hidden>
+        Today's Deliveries
+      </button>
+    </div>
 
     <!-- Collapsible Filter Panel -->
     <section class="filter-section" aria-label="Order filters">
@@ -128,15 +139,25 @@
     <span class="action-bar-count" id="actionBarCount" aria-live="polite">
       <strong>0</strong> selected
     </span>
-    <button
-      class="btn-print"
-      id="printBtn"
-      type="button"
-      disabled
-      aria-label="Print selected orders"
-    >
-      🖨 Print Selected
-    </button>
+    <div class="action-bar-buttons">
+      <button
+        class="btn-print btn-print-all"
+        id="printAllBtn"
+        type="button"
+        aria-label="Print all orders"
+      >
+        🖨 Print All
+      </button>
+      <button
+        class="btn-print"
+        id="printBtn"
+        type="button"
+        disabled
+        aria-label="Print selected orders"
+      >
+        🖨 Print Selected
+      </button>
+    </div>
   </div>
 
   <!-- Hidden print container (rendered at print time) -->

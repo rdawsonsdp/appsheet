@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#570522">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Brown Sugar Bakery — Shift Planning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav" role="banner">
+    <div class="nav-brand">
+      <span class="nav-brand-name">Brown Sugar Bakery</span>
+      <span class="nav-brand-sub">Shift Planning</span>
+    </div>
+    <div class="nav-links">
+      <a href="/index.html" class="nav-link">Orders</a>
+      <a href="/designer.html" class="nav-link">Designer</a>
+    </div>
+  </nav>
+
+  <!-- View Tabs -->
+  <nav class="view-tabs" role="tablist">
+    <button class="view-tab view-tab--active" data-view="create" role="tab" aria-selected="true">Create Checklist</button>
+    <button class="view-tab" data-view="history" role="tab" aria-selected="false">Past Checklists</button>
+    <button class="view-tab" data-view="admin" role="tab" aria-selected="false">Admin</button>
+  </nav>
+
+  <!-- Main Content -->
+  <main role="main">
+
+    <!-- ═══ CREATE CHECKLIST VIEW ═══ -->
+    <div id="viewCreate">
+
+      <!-- Shift Info Bar -->
+      <div class="shift-info-bar">
+        <div class="shift-info-row">
+          <div class="shift-info-field">
+            <label for="shiftDate">Date</label>
+            <input type="date" id="shiftDate">
+          </div>
+          <div class="shift-info-field">
+            <label for="shiftType">Shift</label>
+            <select id="shiftType">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+              <option value="Full Day">Full Day</option>
+            </select>
+          </div>
+        </div>
+        <div class="shift-info-field shift-info-field--full">
+          <label for="shiftNotes">Notes</label>
+          <textarea id="shiftNotes" rows="2" placeholder="Optional shift notes..."></textarea>
+        </div>
+      </div>
+
+      <!-- House Sections -->
+      <div id="houseSections"></div>
+
+      <!-- Print button at bottom of checklist -->
+      <button class="btn-print-checklist" id="printChecklistBtn" type="button" disabled>Print Checklist</button>
+
+    </div>
+
+    <!-- ═══ PAST CHECKLISTS VIEW ═══ -->
+    <div id="viewHistory" hidden>
+      <div id="historyList"></div>
+    </div>
+
+    <!-- ═══ ADMIN VIEW ═══ -->
+    <div id="viewAdmin" hidden>
+      <h2 class="admin-section-title">Task Templates</h2>
+      <div id="templateSections"></div>
+      <h2 class="admin-section-title">Employees</h2>
+      <div id="employeeSections"></div>
+    </div>
+
+  </main>
+
+  <!-- Fixed Bottom Action Bar -->
+  <div class="action-bar" id="shiftActionBar" role="toolbar" aria-label="Shift actions">
+    <span class="action-bar-count" id="shiftTaskCount" aria-live="polite">
+      <strong>0</strong> tasks selected
+    </span>
+    <div class="action-bar-buttons">
+      <button class="btn-print" id="shiftPrintBtn" type="button" disabled>Print</button>
+      <button class="btn-save-checklist" id="shiftSaveBtn" type="button" disabled>Save Checklist</button>
+    </div>
+  </div>
+
+  <!-- Hidden print container -->
+  <div id="printContainer" aria-hidden="true"></div>
+
+  <!-- Success toast -->
+  <div class="toast" id="toast" hidden aria-live="polite"></div>
+
+  <script src="/shift-planning.js"></script>
+</body>
+</html>

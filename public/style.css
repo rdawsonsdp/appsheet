@@ -147,26 +147,32 @@ input[type="date"],
 
 .view-tab {
   flex: 1;
-  padding: 12px;
+  padding: 16px 12px;
   background: none;
   border: none;
-  border-bottom: 3px solid transparent;
-  font-size: 0.9375rem;
+  border-bottom: 4px solid transparent;
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
   text-align: center;
   margin-bottom: -2px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .view-tab--active {
   border-bottom-color: var(--color-primary);
   color: var(--color-primary);
+  background-color: rgba(128, 0, 0, 0.06);
 }
 
 .view-tab:hover:not(.view-tab--active) {
   color: var(--color-text);
+}
+
+.view-tab:active {
+  background-color: rgba(128, 0, 0, 0.1);
 }
 
 .view-tab:focus {
@@ -181,6 +187,61 @@ main {
   padding: 12px 12px 0;
   max-width: 900px;
   margin: 0 auto;
+}
+
+/* ----------------------------------------------------------------
+   Quick Action Buttons
+   ---------------------------------------------------------------- */
+.quick-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.quick-action-btn[hidden] {
+  display: none !important;
+}
+
+.quick-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-brand);
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  box-shadow: var(--shadow-card);
+}
+
+.quick-action-btn:hover {
+  background: var(--color-accent-dark);
+}
+
+.quick-action-btn:active {
+  transform: scale(0.97);
+}
+
+.quick-action-btn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.quick-action-btn--active {
+  background: var(--color-primary);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  transform: none;
+}
+
+.quick-action-btn--active:hover {
+  background: var(--color-primary-dark);
 }
 
 /* ----------------------------------------------------------------
@@ -731,6 +792,25 @@ main {
 .action-bar-count strong {
   color: var(--color-text);
   font-weight: 700;
+}
+
+.action-bar .action-bar-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-print-all {
+  background: var(--color-accent);
+}
+
+.btn-print-all:hover:not(:disabled) {
+  background: var(--color-accent-dark);
+}
+
+.btn-print-all:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .btn-print {
@@ -1386,6 +1466,23 @@ main {
   .slip-items-table td {
     border-color: #000 !important;
   }
+
+  /* Driver's Copy — force black bar to print */
+  .driver-id-bar {
+    background: #000 !important;
+    background-color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .driver-id-bar * {
+    color: #fff !important;
+  }
+
+  .driver-items-table th,
+  .driver-items-table td {
+    border-color: #000 !important;
+  }
 }
 
 /* ----------------------------------------------------------------
@@ -1454,6 +1551,155 @@ main {
   margin-top: 4pt;
   padding-top: 4pt;
   border-top: 1px solid #999;
+}
+
+/* ----------------------------------------------------------------
+   Driver's Copy — Redesigned for quick driver scanning
+   ---------------------------------------------------------------- */
+
+/* Black header bar with order ID */
+.driver-id-bar {
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6pt 12pt;
+  margin-bottom: 10pt;
+}
+
+.driver-id-label {
+  font-size: 13pt;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.driver-id-value {
+  font-size: 22pt;
+  font-weight: 900;
+}
+
+/* Address block — largest text on page */
+.driver-address-block {
+  border: 2px solid #000;
+  padding: 8pt 12pt;
+  margin-bottom: 10pt;
+  line-height: 1.35;
+}
+
+.driver-name {
+  font-size: 14pt;
+  font-weight: 700;
+}
+
+.driver-address {
+  font-size: 18pt;
+  font-weight: 900;
+  margin-top: 2pt;
+}
+
+.driver-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11pt;
+  margin-top: 6pt;
+  padding-top: 6pt;
+  border-top: 1px solid #ccc;
+}
+
+/* Notes callout — thick left border */
+.driver-notes-callout {
+  border-left: 5pt solid #000;
+  padding: 6pt 10pt;
+  margin-bottom: 10pt;
+  font-size: 11pt;
+  line-height: 1.5;
+}
+
+/* Items heading */
+.driver-items-heading {
+  font-size: 11pt;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  margin-bottom: 4pt;
+}
+
+/* Items table with checkbox column */
+.driver-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11pt;
+}
+
+.driver-items-table th {
+  border: 1.5px solid #000;
+  padding: 3pt 5pt;
+  font-weight: bold;
+  font-size: 10pt;
+  text-align: left;
+}
+
+.driver-items-table td {
+  border: 1.5px solid #000;
+  padding: 0;
+  vertical-align: top;
+}
+
+.driver-check-cell {
+  width: 26pt;
+  min-width: 26pt;
+  max-width: 26pt;
+  text-align: center;
+  font-size: 13pt;
+  vertical-align: middle;
+  padding: 2pt !important;
+}
+
+.driver-detail-cell {
+  padding: 3pt 6pt !important;
+  vertical-align: top;
+}
+
+.driver-qty-cell {
+  width: 36pt;
+  min-width: 36pt;
+  max-width: 36pt;
+  text-align: center;
+  font-weight: bold;
+  vertical-align: top;
+  padding: 3pt 4pt !important;
+}
+
+/* Total — right-aligned with top border */
+.driver-total {
+  font-size: 14pt;
+  font-weight: 700;
+  text-align: right;
+  margin-top: 8pt;
+  padding-top: 6pt;
+  border-top: 2px solid #000;
+}
+
+/* Signature lines at bottom of Driver's Copy */
+.driver-signatures {
+  display: flex;
+  gap: 24pt;
+  margin-top: 16pt;
+}
+
+.driver-sig {
+  flex: 1;
+}
+
+.driver-sig-line {
+  border-bottom: 1.5px solid #000;
+  height: 28pt;
+}
+
+.driver-sig-label {
+  font-size: 9pt;
+  font-weight: 600;
+  margin-top: 3pt;
 }
 
 /* Each half (Packing Slip / Bakery Sheet) */
@@ -1575,4 +1821,774 @@ main {
   font-weight: bold;
   vertical-align: top;
   padding: 3pt 4pt !important;
+}
+
+/* ================================================================
+   Shift Planning Styles
+   ================================================================ */
+
+/* Nav links container (multiple links in top-nav) */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ----------------------------------------------------------------
+   Shift Info Bar
+   ---------------------------------------------------------------- */
+.shift-info-bar {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shift-info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.shift-info-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shift-info-field--full {
+  grid-column: 1 / -1;
+}
+
+.shift-info-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.shift-info-field input,
+.shift-info-field select,
+.shift-info-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-surface);
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+}
+
+.shift-info-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%235f6368' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.shift-info-field textarea {
+  resize: vertical;
+  min-height: 56px;
+}
+
+.shift-info-field input:focus,
+.shift-info-field select:focus,
+.shift-info-field textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: var(--color-primary);
+}
+
+/* ----------------------------------------------------------------
+   House Sections (collapsible)
+   ---------------------------------------------------------------- */
+.house-section {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.house-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: left;
+}
+
+.house-toggle:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.house-toggle .arrow {
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+  color: var(--color-text-secondary);
+}
+
+.house-toggle[aria-expanded="false"] .arrow {
+  transform: rotate(-90deg);
+}
+
+.house-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.house-badge--hidden {
+  visibility: hidden;
+}
+
+.house-panel {
+  padding: 0 16px 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.house-panel[hidden] {
+  display: none;
+}
+
+/* ----------------------------------------------------------------
+   Task Checkbox Rows
+   ---------------------------------------------------------------- */
+.task-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-bg);
+  min-height: 44px;
+  flex-wrap: wrap;
+}
+
+.task-check-row:last-of-type {
+  border-bottom: none;
+}
+
+.task-check-row-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.task-check-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.task-check-label {
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  flex: 1;
+}
+
+.task-assign-select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-family: var(--font-body);
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  max-width: 140px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.task-assign-select:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: var(--color-primary);
+}
+
+.task-check-row--custom .task-check-label {
+  font-style: italic;
+}
+
+.task-check-row--completed .task-check-label {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+}
+
+.task-remove-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  font-size: 1.25rem;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.task-remove-btn:hover {
+  background: #fce8e6;
+}
+
+/* ----------------------------------------------------------------
+   Custom Task Inline Form
+   ---------------------------------------------------------------- */
+/* House-level notes */
+.house-notes {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.house-notes-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.house-notes-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  resize: vertical;
+}
+
+.house-notes-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.custom-task-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.custom-task-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  min-height: 40px;
+}
+
+.custom-task-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.custom-task-add-btn {
+  padding: 0 14px;
+  height: 40px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 40px;
+}
+
+.custom-task-add-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+/* ----------------------------------------------------------------
+   Admin Section Headings
+   ---------------------------------------------------------------- */
+.admin-section-title {
+  font-family: var(--font-brand);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 24px 16px 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.admin-section-title:first-child {
+  margin-top: 12px;
+}
+
+/* ----------------------------------------------------------------
+   Template Manager Rows
+   ---------------------------------------------------------------- */
+.template-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-bg);
+}
+
+.template-row:last-of-type {
+  border-bottom: none;
+}
+
+.template-title-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: transparent;
+  min-height: 40px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.template-title-input:hover {
+  border-color: var(--color-border);
+  background: var(--color-bg);
+}
+
+.template-title-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.template-delete-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  font-size: 1.25rem;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.template-delete-btn:hover {
+  background: #fce8e6;
+}
+
+/* ----------------------------------------------------------------
+   History — Checklist Cards
+   ---------------------------------------------------------------- */
+.checklist-card {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.checklist-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.checklist-card-header:hover {
+  background: var(--color-bg);
+}
+
+.checklist-card-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.checklist-card-date {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--color-text);
+}
+
+.shift-type-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.03em;
+}
+
+.shift-type-badge--am {
+  background: #fef7e0;
+  color: #b06000;
+}
+
+.shift-type-badge--pm {
+  background: #e8eaf6;
+  color: #3949ab;
+}
+
+.shift-type-badge--fullday {
+  background: #e6f4ea;
+  color: var(--color-success);
+}
+
+.checklist-card-count {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.checklist-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.progress-bar {
+  width: 60px;
+  height: 6px;
+  background: var(--color-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-success);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.checklist-card-arrow {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.checklist-card-body {
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.checklist-card-body[hidden] {
+  display: none;
+}
+
+.checklist-card-notes {
+  padding: 10px 14px;
+  background: #fffbf0;
+  border: 1px solid #f0e0a0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+.history-house-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  padding: 10px 0 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.history-assignee {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-style: normal;
+  color: var(--color-primary);
+  background: rgba(87, 5, 34, 0.08);
+  padding: 1px 8px;
+  border-radius: 10px;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.checklist-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.btn-history-print {
+  flex: 1;
+  height: 40px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.btn-history-print:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn-history-delete {
+  flex: 1;
+  height: 40px;
+  background: none;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.btn-history-delete:hover {
+  background: #fce8e6;
+}
+
+/* ----------------------------------------------------------------
+   Save Checklist Button (action bar)
+   ---------------------------------------------------------------- */
+.action-bar-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-save-checklist {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  height: 44px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 22px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-save-checklist:hover:not(:disabled) {
+  background: var(--color-accent-dark);
+}
+
+.btn-save-checklist:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------------
+   Toast notification
+   ---------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  bottom: calc(var(--action-bar-h) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-text);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 24px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  z-index: 300;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  animation: fadeIn 0.15s ease;
+}
+
+.toast[hidden] {
+  display: none;
+}
+
+/* ----------------------------------------------------------------
+   Print Styles — Shift Checklist
+   ---------------------------------------------------------------- */
+.print-shift-checklist {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11pt;
+  color: #000;
+  padding: 0.5in;
+}
+
+.print-shift-title {
+  font-size: 18pt;
+  font-weight: 900;
+  margin-bottom: 6pt;
+  text-align: center;
+}
+
+.print-shift-meta {
+  display: flex;
+  gap: 24pt;
+  font-size: 11pt;
+  margin-bottom: 8pt;
+  justify-content: center;
+}
+
+.print-shift-notes {
+  font-size: 10pt;
+  padding: 6pt 10pt;
+  border: 1px solid #999;
+  border-radius: 4pt;
+  margin-bottom: 10pt;
+}
+
+.print-shift-timestamp {
+  font-size: 9pt;
+  color: #666;
+  text-align: center;
+  margin-bottom: 10pt;
+}
+
+.print-shift-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+  margin-bottom: 8pt;
+}
+
+.print-shift-table th,
+.print-shift-table td {
+  border: 1.5px solid #000;
+  padding: 4pt 6pt;
+  text-align: left;
+  vertical-align: top;
+}
+
+.print-shift-table .print-check-col {
+  width: 24pt;
+  min-width: 24pt;
+  max-width: 24pt;
+}
+
+.print-shift-table .print-assign-col {
+  width: 80pt;
+  min-width: 60pt;
+  font-size: 8pt;
+  color: #333;
+}
+
+/* One house section per printed page */
+.print-shift-page {
+  page-break-after: always;
+  break-after: page;
+}
+
+.print-shift-page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+/* Print Checklist button at bottom of create view */
+.btn-print-checklist {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  margin-bottom: 12px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.btn-print-checklist:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btn-print-checklist:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media print {
+  .print-shift-checklist,
+  .print-shift-checklist * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .print-shift-table th,
+  .print-shift-table td {
+    border-color: #000 !important;
+  }
+
+  .print-shift-timestamp {
+    color: #000 !important;
+  }
 }

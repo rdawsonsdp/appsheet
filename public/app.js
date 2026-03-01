@@ -66,6 +66,7 @@ const ordersList      = document.getElementById('ordersList');
 const ordersCount     = document.getElementById('ordersCount');
 const actionBarCount  = document.getElementById('actionBarCount');
 const printBtn        = document.getElementById('printBtn');
+const printAllBtn     = document.getElementById('printAllBtn');
 const printContainer  = document.getElementById('printContainer');
 const filterToggleBtn = document.getElementById('filterToggleBtn');
 const filterPanel     = document.getElementById('filterPanel');
@@ -86,6 +87,9 @@ const searchBtn           = document.getElementById('searchBtn');
 const selectAllBtn        = document.getElementById('selectAllBtn');
 const sortFieldEl         = document.getElementById('sortField');
 const sortDirBtn          = document.getElementById('sortDirBtn');
+// Quick actions
+const todayPickupsBtn     = document.getElementById('todayPickupsBtn');
+const todayDeliveriesBtn  = document.getElementById('todayDeliveriesBtn');
 // Modal
 const orderModalBackdrop  = document.getElementById('orderModalBackdrop');
 const modalOrderName      = document.getElementById('modalOrderName');
@@ -104,15 +108,17 @@ let   modalCurrentId      = null;
 document.addEventListener('DOMContentLoaded', () => {
   bindViewTabs();
   bindFilterEvents();
+  bindQuickActions();
   bindActionBarEvents();
   bindModalEvents();
+  updateQuickActionButtons();
   setDefaultFilters();
   fetchOrders();
 });
 
 function setDefaultFilters() {
   // Default: today's orders, sorted by entry order (oldest first)
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const today = todayLocal(); // YYYY-MM-DD
   orderDateFrom.value = today;
   orderDateTo.value   = today;
   sortFieldEl.value   = '_RowNumber';
@@ -143,6 +149,7 @@ function bindViewTabs() {
 
       // Swap "Pickup Date" ↔ "Delivery Date" labels
       updateDateLabels();
+      updateQuickActionButtons();
 
       // Reset selection and re-fetch
       selectedIds.clear();
@@ -150,6 +157,11 @@ function bindViewTabs() {
       fetchOrders();
     });
   });
+}
+
+function updateQuickActionButtons() {
+  todayPickupsBtn.hidden    = (currentView !== 'orders');
+  todayDeliveriesBtn.hidden = (currentView !== 'delivery');
 }
 
 function updateDateLabels() {
@@ -284,7 +296,8 @@ function updateFilterBadge() {
   filterBadge.hidden = n === 0;
 }
 
-function clearFilters() {
+// Reset all filter inputs without triggering applyFilters/render
+function resetFilterValues() {
   dateFrom.value          = '';
   dateTo.value            = '';
   orderDateFrom.value     = '';
@@ -292,7 +305,12 @@ function clearFilters() {
   statusSelect.value      = '';
   orderTypeSelect.value   = '';
   customerSearch.value    = '';
+}
+
+function clearFilters() {
+  resetFilterValues();
   syncDateGroupExclusion();
+  clearQuickActionActive();
   applyFilters();
 }
 
@@ -454,6 +472,7 @@ function updateActionBar() {
   const n = selectedIds.size;
   actionBarCount.innerHTML = `<strong>${n}</strong> selected`;
   printBtn.disabled = n === 0;
+  printAllBtn.disabled = filteredOrders.length === 0;
   // Update select-all button text
   if (filteredOrders.length > 0) {
     const allSelected = filteredOrders.every(o => selectedIds.has(String(o._RowNumber)));
@@ -471,6 +490,14 @@ function printSelected() {
   printContainer.innerHTML = ordersToprint.map(renderOrderForPrint).join('');
 
   // Safari/iOS needs a small delay before window.print()
+  setTimeout(() => {
+    window.print();
+  }, 100);
+}
+
+function printAll() {
+  if (filteredOrders.length === 0) return;
+  printContainer.innerHTML = filteredOrders.map(renderOrderForPrint).join('');
   setTimeout(() => {
     window.print();
   }, 100);
@@ -513,7 +540,7 @@ function renderDeliveryForPrint(order, templateHtml) {
 
   const orderCount = escHtml(order['Order Count'] || '');
 
-  // Page 1: Packing Slip
+  // Page 1: Packing Slip (unchanged)
   const packingSlip = `<div class="print-order">
     <div class="delivery-heading">DELIVERY</div>
     <div class="slip-half">
@@ -535,31 +562,37 @@ function renderDeliveryForPrint(order, templateHtml) {
     </div>
   </div>`;
 
-  // Page 2: Driver's Copy — prominent customer box + order summary + delivery notes
-  const deliveryFooter = buildDeliveryFooter(order);
-  const driversCopy = `<div class="print-order">
-    <div class="delivery-heading">DRIVER'S COPY</div>
-    <div class="delivery-customer-box">
-      <div class="delivery-customer-name">${name}</div>
-      ${addr ? `<div class="delivery-customer-addr">${addr}</div>` : ''}
-      ${phone ? `<div class="delivery-customer-phone">&#9742; ${phone}</div>` : ''}
+  // Page 2: Driver's Copy — redesigned for quick scanning
+  const driverNotes = buildDriverNotes(order);
+  const driverItems = buildDriverItemsTable(order);
+  const total = order['Total'] || '';
+
+  const driversCopy = `<div class="print-order driver-page">
+    <div class="driver-id-bar">
+      <span class="driver-id-label">DRIVER'S COPY</span>
+      <span class="driver-id-value">#${orderId}</span>
     </div>
-    <div class="slip-half">
-      <div class="slip-order-count-banner"><strong>Order Count: ${orderCount}</strong></div>
-      <div class="slip-header">
-        <div>
-          <div class="slip-order-id">${orderId}</div>
-          <h2 class="slip-customer">${name}</h2>
-        </div>
-        <span class="slip-count">${orderCount}</span>
+    <div class="driver-address-block">
+      <div class="driver-name">${name}</div>
+      ${addr ? `<div class="driver-address">${addr}</div>` : ''}
+      <div class="driver-meta-row">
+        <span>${dueDate}${dueTime ? ' &mdash; ' + dueTime : ''}</span>
+        ${phone ? `<span>&#9742; ${phone}</span>` : ''}
       </div>
-      <div class="slip-meta">
-        <div><strong>Delivery Date:</strong> ${dueDate}</div>
-        <div><strong>Delivery Time:</strong> ${dueTime}</div>
-      </div>
-      ${buildLineItemsTable(order)}
     </div>
-    ${deliveryFooter}
+    ${driverNotes}
+    ${driverItems}
+    ${total ? `<div class="driver-total">Total: ${escHtml(total)}</div>` : ''}
+    <div class="driver-signatures">
+      <div class="driver-sig">
+        <div class="driver-sig-line"></div>
+        <div class="driver-sig-label">Packed by</div>
+      </div>
+      <div class="driver-sig">
+        <div class="driver-sig-line"></div>
+        <div class="driver-sig-label">Driver</div>
+      </div>
+    </div>
   </div>`;
 
   return packingSlip + driversCopy;
@@ -582,6 +615,62 @@ function buildDeliveryFooter(order) {
 
   if (rows.length === 0) return '';
   return `<div class="delivery-footer">${rows.join('')}</div>`;
+}
+
+function buildDriverNotes(order) {
+  const lines = [];
+
+  // Delivery attributes (skip address/phone — already shown above)
+  const skipKeys = new Set(['delivery address', 'address', 'phone', 'phonenumber']);
+  const attrs = order['Delivery Attributes'] || [];
+  attrs.forEach(a => {
+    if (a.value && !skipKeys.has(a.name.toLowerCase()) && !a.name.toLowerCase().startsWith('easyroutes')) {
+      lines.push(`<strong>${escHtml(a.name)}:</strong> ${escHtml(a.value)}`);
+    }
+  });
+
+  if (order['Order Notes']) {
+    lines.push(`<strong>Delivery Notes:</strong> ${escHtml(order['Order Notes'])}`);
+  }
+
+  if (lines.length === 0) return '';
+  return `<div class="driver-notes-callout">${lines.join('<br>')}</div>`;
+}
+
+function buildDriverItemsTable(order) {
+  const items = order['Line Items'];
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return '<p style="color:#666;font-style:italic;font-size:10pt;">No line items.</p>';
+  }
+
+  const rows = items.map(item => {
+    const product = escHtml(String(item['Product Description'] || ''));
+    const subLines = [
+      item['Writing Notes']   ? `<div class="slip-sub">Writing: ${escHtml(item['Writing Notes'])}</div>`   : '',
+      item['Color']           ? `<div class="slip-sub">Color: ${escHtml(item['Color'])}</div>`             : '',
+      item['Add-Ons']         ? `<div class="slip-sub">Add-Ons: ${escHtml(item['Add-Ons'])}</div>`         : '',
+      item['Line Item Notes'] ? `<div class="slip-sub">Notes: ${escHtml(item['Line Item Notes'])}</div>`   : '',
+    ].join('');
+    const qty = escHtml(String(item['CakeQty'] || ''));
+
+    return `<tr>
+      <td class="driver-check-cell">&#9744;</td>
+      <td class="driver-detail-cell">${product}${subLines}</td>
+      <td class="driver-qty-cell">${qty}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="driver-items-heading">ORDER ITEMS (${items.length})</div>
+  <table class="driver-items-table">
+    <thead>
+      <tr>
+        <th class="driver-check-cell">&#10003;</th>
+        <th class="driver-detail-cell">Item</th>
+        <th class="driver-qty-cell">Qty</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
 }
 
 function buildItemsSummary(order) {
@@ -653,10 +742,12 @@ function bindFilterEvents() {
 
   // Live filtering — also enforce mutual exclusion on date groups
   const onPickupChange = () => {
+    clearQuickActionActive();
     syncDateGroupExclusion();
     if (allOrders.length) applyFilters();
   };
   const onOrderDateChange = () => {
+    clearQuickActionActive();
     syncDateGroupExclusion();
     if (allOrders.length) applyFilters();
   };
@@ -694,8 +785,44 @@ function bindFilterEvents() {
   });
 }
 
+// ----------------------------------------------------------------
+// Quick Action Buttons
+// ----------------------------------------------------------------
+function bindQuickActions() {
+  todayPickupsBtn.addEventListener('click', () => {
+    const today = todayLocal();
+    resetFilterValues();
+    dateFrom.value = today;
+    dateTo.value   = today;
+    syncDateGroupExclusion();
+    setQuickActionActive(todayPickupsBtn);
+    fetchOrders();
+  });
+
+  todayDeliveriesBtn.addEventListener('click', () => {
+    const today = todayLocal();
+    resetFilterValues();
+    dateFrom.value = today;
+    dateTo.value   = today;
+    syncDateGroupExclusion();
+    setQuickActionActive(todayDeliveriesBtn);
+    fetchOrders();
+  });
+}
+
+function setQuickActionActive(activeBtn) {
+  todayPickupsBtn.classList.toggle('quick-action-btn--active', activeBtn === todayPickupsBtn);
+  todayDeliveriesBtn.classList.toggle('quick-action-btn--active', activeBtn === todayDeliveriesBtn);
+}
+
+function clearQuickActionActive() {
+  todayPickupsBtn.classList.remove('quick-action-btn--active');
+  todayDeliveriesBtn.classList.remove('quick-action-btn--active');
+}
+
 function bindActionBarEvents() {
   printBtn.addEventListener('click', printSelected);
+  printAllBtn.addEventListener('click', printAll);
   selectAllBtn.addEventListener('click', selectAll);
 }
 
@@ -886,6 +1013,12 @@ function getStatusClass(status) {
     case 'canceled':  return 'status-cancelled';
     default:          return 'status-default';
   }
+}
+
+// Local today as YYYY-MM-DD (avoids UTC offset issues with toISOString)
+function todayLocal() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 // Convert MM/DD/YYYY (AppSheet) → YYYY-MM-DD (for date input comparison)
