@@ -88,8 +88,10 @@ const selectAllBtn        = document.getElementById('selectAllBtn');
 const sortFieldEl         = document.getElementById('sortField');
 const sortDirBtn          = document.getElementById('sortDirBtn');
 // Quick actions
-const todayPickupsBtn     = document.getElementById('todayPickupsBtn');
-const todayDeliveriesBtn  = document.getElementById('todayDeliveriesBtn');
+const todayPickupsBtn        = document.getElementById('todayPickupsBtn');
+const upcomingPickupsBtn     = document.getElementById('upcomingPickupsBtn');
+const todayDeliveriesBtn     = document.getElementById('todayDeliveriesBtn');
+const upcomingDeliveriesBtn  = document.getElementById('upcomingDeliveriesBtn');
 // Modal
 const orderModalBackdrop  = document.getElementById('orderModalBackdrop');
 const modalOrderName      = document.getElementById('modalOrderName');
@@ -121,8 +123,8 @@ function setDefaultFilters() {
   const today = todayLocal(); // YYYY-MM-DD
   orderDateFrom.value = today;
   orderDateTo.value   = today;
-  sortFieldEl.value   = '_RowNumber';
-  sortField           = '_RowNumber';
+  sortFieldEl.value   = 'Due Pickup Date';
+  sortField           = 'Due Pickup Date';
   syncDateGroupExclusion(); // grays out pickup date fields
 }
 
@@ -160,8 +162,10 @@ function bindViewTabs() {
 }
 
 function updateQuickActionButtons() {
-  todayPickupsBtn.hidden    = (currentView !== 'orders');
-  todayDeliveriesBtn.hidden = (currentView !== 'delivery');
+  todayPickupsBtn.hidden       = (currentView !== 'orders');
+  upcomingPickupsBtn.hidden    = (currentView !== 'orders');
+  todayDeliveriesBtn.hidden    = (currentView !== 'delivery');
+  upcomingDeliveriesBtn.hidden = (currentView !== 'delivery');
 }
 
 function updateDateLabels() {
@@ -808,16 +812,40 @@ function bindQuickActions() {
     setQuickActionActive(todayDeliveriesBtn);
     fetchOrders();
   });
+
+  upcomingPickupsBtn.addEventListener('click', () => {
+    const today = todayLocal();
+    resetFilterValues();
+    dateFrom.value = today;
+    dateTo.value   = futureLocal(3);
+    syncDateGroupExclusion();
+    setQuickActionActive(upcomingPickupsBtn);
+    fetchOrders();
+  });
+
+  upcomingDeliveriesBtn.addEventListener('click', () => {
+    const today = todayLocal();
+    resetFilterValues();
+    dateFrom.value = today;
+    dateTo.value   = futureLocal(3);
+    syncDateGroupExclusion();
+    setQuickActionActive(upcomingDeliveriesBtn);
+    fetchOrders();
+  });
 }
 
 function setQuickActionActive(activeBtn) {
   todayPickupsBtn.classList.toggle('quick-action-btn--active', activeBtn === todayPickupsBtn);
+  upcomingPickupsBtn.classList.toggle('quick-action-btn--active', activeBtn === upcomingPickupsBtn);
   todayDeliveriesBtn.classList.toggle('quick-action-btn--active', activeBtn === todayDeliveriesBtn);
+  upcomingDeliveriesBtn.classList.toggle('quick-action-btn--active', activeBtn === upcomingDeliveriesBtn);
 }
 
 function clearQuickActionActive() {
   todayPickupsBtn.classList.remove('quick-action-btn--active');
+  upcomingPickupsBtn.classList.remove('quick-action-btn--active');
   todayDeliveriesBtn.classList.remove('quick-action-btn--active');
+  upcomingDeliveriesBtn.classList.remove('quick-action-btn--active');
 }
 
 function bindActionBarEvents() {
@@ -1018,6 +1046,13 @@ function getStatusClass(status) {
 // Local today as YYYY-MM-DD (avoids UTC offset issues with toISOString)
 function todayLocal() {
   const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Local date N days from today as YYYY-MM-DD
+function futureLocal(days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
