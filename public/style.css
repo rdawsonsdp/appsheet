@@ -3008,6 +3008,85 @@ main {
 }
 
 /* ----------------------------------------------------------------
+   Edit Top Bar — jump pills + save button, sticky
+   ---------------------------------------------------------------- */
+.sop-edit-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 118px;
+  z-index: 80;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 16px;
+}
+
+.sop-edit-top-bar .sop-jump-nav--inline {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  position: static;
+  border-bottom: none;
+  background: transparent;
+}
+
+.sop-edit-top-bar .sop-jump-nav--inline::-webkit-scrollbar {
+  display: none;
+}
+
+/* Save & Done button */
+.sop-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 36px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sop-save-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.sop-save-btn:active {
+  background: #3a0316;
+}
+
+.sop-save-btn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Bottom save button — full width, prominent */
+.sop-save-btn--bottom {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  font-size: 1.0625rem;
+  min-height: 48px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+/* ----------------------------------------------------------------
    Print Size Picker Modal (bottom sheet)
    ---------------------------------------------------------------- */
 .sop-modal-backdrop {
@@ -3395,4 +3474,188 @@ main {
   .sop-idx-bar * {
     color: #fff !important;
   }
+}
+
+/* ----------------------------------------------------------------
+   History Modal (bottom sheet — same pattern as print modal)
+   ---------------------------------------------------------------- */
+.sop-history-modal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 510;
+  background: var(--color-surface);
+  border-radius: 20px 20px 0 0;
+  max-width: 600px;
+  margin: 0 auto;
+  animation: slideUp 0.2s ease;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.sop-history-modal[hidden] { display: none; }
+
+.sop-history-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.sop-history-modal-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sop-history-modal-body {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Version list */
+.sop-version-list {
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sop-version-empty {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  padding: 32px 0;
+}
+
+.sop-version-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 48px;
+}
+
+.sop-version-item:hover {
+  border-color: var(--color-primary);
+  background: rgba(87,5,34,0.04);
+}
+
+.sop-version-item--active {
+  border-color: var(--color-primary);
+  background: rgba(87,5,34,0.07);
+}
+
+.sop-version-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sop-version-badge {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  background: var(--color-border);
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Preview panel */
+.sop-version-preview {
+  padding: 16px 20px 24px;
+  border-top: 1px solid var(--color-border);
+}
+
+.sop-version-preview[hidden] { display: none; }
+
+.sop-version-preview-header {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sop-version-preview-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.sop-preview-station {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+}
+
+.sop-preview-station-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sop-preview-station-count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+/* Restore button */
+.sop-restore-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+  min-height: 48px;
+}
+
+.sop-restore-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+/* History button in action bar */
+.btn-history {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.15s;
+}
+
+.btn-history:hover {
+  background: rgba(87,5,34,0.06);
 }

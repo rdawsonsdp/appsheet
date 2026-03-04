@@ -6,6 +6,13 @@
 'use strict';
 
 // ----------------------------------------------------------------
+// Supabase Client
+// ----------------------------------------------------------------
+const SUPABASE_URL = 'https://tvblidojyxcmocxehiqd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2YmxpZG9qeXhjbW9jeGVoaXFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1ODk1ODcsImV4cCI6MjA4ODE2NTU4N30.QPPXeSu829YbBgeVPYuKj3jS5W3QdtzfVJfpTW-BfYU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ----------------------------------------------------------------
 // Seed Data — 4 Stations from the SOP PDF
 // ----------------------------------------------------------------
 const SEED_STATIONS = [
@@ -158,6 +165,50 @@ function generateId() {
 }
 
 // ----------------------------------------------------------------
+// Supabase Snapshot Helpers
+// ----------------------------------------------------------------
+async function saveSnapshot(stationsData) {
+  const now = new Date();
+  const label = now.toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  });
+  const { error } = await sb.from('station_snapshots').insert({
+    label,
+    stations_json: stationsData,
+  });
+  if (error) console.error('Snapshot save failed:', error.message);
+}
+
+async function loadSnapshots() {
+  const { data, error } = await sb
+    .from('station_snapshots')
+    .select('id, saved_at, label, stations_json')
+    .order('saved_at', { ascending: false });
+  if (error) {
+    console.error('Failed to load snapshots:', error.message);
+    return [];
+  }
+  return data || [];
+}
+
+async function restoreSnapshot(id) {
+  const { data, error } = await sb
+    .from('station_snapshots')
+    .select('stations_json')
+    .eq('id', id)
+    .single();
+  if (error || !data) {
+    console.error('Failed to restore snapshot:', error?.message);
+    return false;
+  }
+  saveStations(data.stations_json);
+  stations = loadStations();
+  renderRunbooksView();
+  return true;
+}
+
+// ----------------------------------------------------------------
 // State
 // ----------------------------------------------------------------
 let stations    = [];
@@ -184,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
   stations = loadStations();
   bindViewTabs();
   bindPrintModal();
+  bindHistoryModal();
   renderRunbooksView();
 });
 
@@ -311,9 +363,23 @@ function renderEditView() {
 
   const sorted = [...stations].sort((a, b) => a.sortOrder - b.sortOrder);
 
+  // Jump-nav pill bar + top save button
+  const topBar = document.createElement('div');
+  topBar.className = 'sop-edit-top-bar';
+  topBar.innerHTML = `
+    <nav class="sop-jump-nav sop-jump-nav--inline" aria-label="Jump to station">
+      ${sorted.map(s =>
+        `<button class="sop-jump-pill" type="button" data-station="${s.id}">${escHtml(s.name)}</button>`
+      ).join('')}
+    </nav>
+    <button class="sop-save-btn" type="button">Save &amp; Done</button>
+  `;
+  editList.appendChild(topBar);
+
   sorted.forEach(station => {
     const stationEl = document.createElement('div');
     stationEl.className = 'house-section';
+    stationEl.id = `edit-station-${station.id}`;
     stationEl.innerHTML = `
       <button class="house-toggle" aria-expanded="true" data-station="${station.id}">
         <span>${escHtml(station.name)}</span>
@@ -351,17 +417,55 @@ function renderEditView() {
     editList.appendChild(stationEl);
   });
 
-  // Add Station button at the end
+  // Add Station button
   const addBtn = document.createElement('button');
   addBtn.className = 'btn-add-station';
   addBtn.type = 'button';
   addBtn.textContent = '+ Add Station';
   editList.appendChild(addBtn);
 
+  // Bottom save button
+  const bottomSave = document.createElement('button');
+  bottomSave.className = 'sop-save-btn sop-save-btn--bottom';
+  bottomSave.type = 'button';
+  bottomSave.innerHTML = 'Save &amp; Done';
+  editList.appendChild(bottomSave);
+
   bindEditEvents();
 }
 
+function handleSaveDone() {
+  // Blur any active input to trigger auto-save
+  const active = document.activeElement;
+  if (active && active.closest('#editList')) active.blur();
+  saveStations(stations);
+  // Push snapshot to Supabase
+  saveSnapshot(stations).then(() => {
+    showToast('Saved — version backed up');
+  }).catch(() => {
+    showToast('All changes saved');
+  });
+  // Switch to Runbooks tab
+  document.querySelector('.view-tab[data-view="runbooks"]').click();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function bindEditEvents() {
+  // Bind save buttons
+  editList.querySelectorAll('.sop-save-btn').forEach(btn => {
+    btn.addEventListener('click', handleSaveDone);
+  });
+
+  // Bind jump-nav pills
+  editList.querySelectorAll('.sop-jump-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(`edit-station-${btn.dataset.station}`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
   // Collapsible toggles
   editList.querySelectorAll('.house-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -653,6 +757,101 @@ function buildIndexCard(station, dateStr) {
     </div>
     <div class="sop-idx-footer">Brown Sugar Bakery</div>
   </div>`;
+}
+
+// ----------------------------------------------------------------
+// History Modal
+// ----------------------------------------------------------------
+const historyModal        = document.getElementById('historyModal');
+const historyModalBackdrop = document.getElementById('historyModalBackdrop');
+const versionList         = document.getElementById('versionList');
+const versionPreview      = document.getElementById('versionPreview');
+const versionPreviewHeader = document.getElementById('versionPreviewHeader');
+const versionPreviewBody  = document.getElementById('versionPreviewBody');
+const restoreBtn          = document.getElementById('restoreBtn');
+let selectedSnapshotId    = null;
+
+function bindHistoryModal() {
+  document.getElementById('historyBtn').addEventListener('click', openHistoryModal);
+  document.getElementById('historyModalCloseBtn').addEventListener('click', closeHistoryModal);
+  historyModalBackdrop.addEventListener('click', closeHistoryModal);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !historyModal.hidden) closeHistoryModal();
+  });
+  restoreBtn.addEventListener('click', async () => {
+    if (!selectedSnapshotId) return;
+    if (!confirm('Restore this version? Current stations will be replaced.')) return;
+    const ok = await restoreSnapshot(selectedSnapshotId);
+    if (ok) {
+      showToast('Version restored');
+      closeHistoryModal();
+    } else {
+      showToast('Restore failed');
+    }
+  });
+}
+
+async function openHistoryModal() {
+  historyModal.hidden = false;
+  historyModalBackdrop.hidden = false;
+  document.body.style.overflow = 'hidden';
+  selectedSnapshotId = null;
+  versionPreview.hidden = true;
+  versionList.innerHTML = '<div class="sop-version-empty">Loading versions...</div>';
+
+  const snapshots = await loadSnapshots();
+  if (snapshots.length === 0) {
+    versionList.innerHTML = '<div class="sop-version-empty">No saved versions yet.<br>Versions are created each time you "Save & Done".</div>';
+    return;
+  }
+
+  versionList.innerHTML = '';
+  snapshots.forEach(snap => {
+    const stationsData = snap.stations_json;
+    const totalTasks = Array.isArray(stationsData)
+      ? stationsData.reduce((sum, s) => sum + (s.sections || []).reduce((sSum, sec) => sSum + (sec.tasks || []).length, 0), 0)
+      : 0;
+    const stationCount = Array.isArray(stationsData) ? stationsData.length : 0;
+
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'sop-version-item';
+    item.dataset.snapshotId = snap.id;
+    item.innerHTML = `
+      <span class="sop-version-label">${escHtml(snap.label)}</span>
+      <span class="sop-version-badge">${stationCount} station${stationCount !== 1 ? 's' : ''} · ${totalTasks} task${totalTasks !== 1 ? 's' : ''}</span>
+    `;
+    item.addEventListener('click', () => selectVersion(snap, item));
+    versionList.appendChild(item);
+  });
+}
+
+function selectVersion(snap, itemEl) {
+  selectedSnapshotId = snap.id;
+  // Highlight active item
+  versionList.querySelectorAll('.sop-version-item').forEach(el => el.classList.remove('sop-version-item--active'));
+  itemEl.classList.add('sop-version-item--active');
+
+  // Build preview
+  const stationsData = Array.isArray(snap.stations_json) ? snap.stations_json : [];
+  versionPreviewHeader.textContent = 'Preview — ' + snap.label;
+  versionPreviewBody.innerHTML = stationsData.length === 0
+    ? '<div class="sop-version-empty">Empty snapshot</div>'
+    : stationsData.map(s => {
+        const taskCount = (s.sections || []).reduce((sum, sec) => sum + (sec.tasks || []).length, 0);
+        return `<div class="sop-preview-station">
+          <span class="sop-preview-station-name">${escHtml(s.name)}</span>
+          <span class="sop-preview-station-count">${taskCount} task${taskCount !== 1 ? 's' : ''}</span>
+        </div>`;
+      }).join('');
+  versionPreview.hidden = false;
+}
+
+function closeHistoryModal() {
+  historyModal.hidden = true;
+  historyModalBackdrop.hidden = true;
+  document.body.style.overflow = '';
+  selectedSnapshotId = null;
 }
 
 // ----------------------------------------------------------------

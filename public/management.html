@@ -63,6 +63,7 @@
   <div class="action-bar" id="sopActionBar" role="toolbar" aria-label="Station actions">
     <span class="action-bar-count">Station Runbooks</span>
     <div class="action-bar-buttons">
+      <button class="btn-history" id="historyBtn" type="button">History</button>
       <button class="btn-print" id="printAllBtn" type="button">Print All</button>
     </div>
   </div>
@@ -94,6 +95,26 @@
   <!-- Success toast -->
   <div class="toast" id="toast" hidden aria-live="polite"></div>
 
+  <!-- History Modal -->
+  <div class="sop-modal-backdrop" id="historyModalBackdrop" hidden></div>
+  <div class="sop-history-modal" id="historyModal" hidden>
+    <div class="sop-history-modal-header">
+      <span class="sop-history-modal-title">Version History</span>
+      <button class="modal-close-btn" id="historyModalCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    <div class="sop-history-modal-body">
+      <div class="sop-version-list" id="versionList">
+        <div class="sop-version-empty">Loading versions...</div>
+      </div>
+      <div class="sop-version-preview" id="versionPreview" hidden>
+        <div class="sop-version-preview-header" id="versionPreviewHeader"></div>
+        <div class="sop-version-preview-body" id="versionPreviewBody"></div>
+        <button class="sop-restore-btn" id="restoreBtn" type="button">Restore This Version</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/menu.js"></script>
   <script src="/management.js"></script>
 </body>
