@@ -20,6 +20,7 @@ const MIME = {
   '.json': 'application/json',
   '.png':  'image/png',
   '.ico':  'image/x-icon',
+  '.svg':  'image/svg+xml',
 };
 
 // Add Express-style helpers to raw Node res object
