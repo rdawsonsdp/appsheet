@@ -20,10 +20,22 @@
       <span class="nav-brand-name">Brown Sugar Bakery</span>
       <span class="nav-brand-sub">Orders</span>
     </div>
-    <div class="nav-links">
-      <a href="/shift-planning.html" class="nav-link">Shift Planning</a>
-      <a href="/designer.html" class="nav-link">Designer</a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+      <span class="menu-toggle-icon"></span>
+    </button>
+  </nav>
+
+  <!-- Menu Drawer -->
+  <div class="menu-backdrop" id="menuBackdrop"></div>
+  <nav class="menu-drawer" id="menuDrawer" aria-label="Main navigation">
+    <div class="menu-drawer-header">
+      <span class="menu-drawer-title">Brown Sugar Bakery</span>
+      <button class="menu-close-btn" id="menuCloseBtn" aria-label="Close menu">&#10005;</button>
     </div>
+    <ul class="menu-list">
+      <li><a href="/" class="menu-item">Orders</a></li>
+      <li><a href="/management.html" class="menu-item">Management</a></li>
+    </ul>
   </nav>
 
   <!-- View Tabs -->
@@ -200,6 +212,7 @@
     </div>
   </div>
 
+  <script src="/menu.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

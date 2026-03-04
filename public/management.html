@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#570522">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Brown Sugar Bakery — Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav" role="banner">
+    <div class="nav-brand">
+      <span class="nav-brand-name">Brown Sugar Bakery</span>
+      <span class="nav-brand-sub">Management</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+      <span class="menu-toggle-icon"></span>
+    </button>
+  </nav>
+
+  <!-- Menu Drawer -->
+  <div class="menu-backdrop" id="menuBackdrop"></div>
+  <nav class="menu-drawer" id="menuDrawer" aria-label="Main navigation">
+    <div class="menu-drawer-header">
+      <span class="menu-drawer-title">Brown Sugar Bakery</span>
+      <button class="menu-close-btn" id="menuCloseBtn" aria-label="Close menu">&#10005;</button>
+    </div>
+    <ul class="menu-list">
+      <li><a href="/" class="menu-item">Orders</a></li>
+      <li><a href="/management.html" class="menu-item">Management</a></li>
+    </ul>
+  </nav>
+
+  <!-- View Tabs -->
+  <nav class="view-tabs" role="tablist">
+    <button class="view-tab view-tab--active" data-view="runbooks" role="tab" aria-selected="true">Station Runbooks</button>
+    <button class="view-tab" data-view="edit" role="tab" aria-selected="false">Edit Stations</button>
+  </nav>
+
+  <!-- Main Content -->
+  <main role="main">
+
+    <!-- ═══ RUNBOOKS VIEW ═══ -->
+    <div id="viewRunbooks">
+      <div id="runbooksList"></div>
+    </div>
+
+    <!-- ═══ EDIT STATIONS VIEW ═══ -->
+    <div id="viewEdit" hidden>
+      <div id="editList"></div>
+    </div>
+
+  </main>
+
+  <!-- Fixed Bottom Action Bar -->
+  <div class="action-bar" id="sopActionBar" role="toolbar" aria-label="Station actions">
+    <span class="action-bar-count">Station Runbooks</span>
+    <div class="action-bar-buttons">
+      <button class="btn-print" id="printAllBtn" type="button">Print All</button>
+    </div>
+  </div>
+
+  <!-- Print Size Picker Modal -->
+  <div class="sop-modal-backdrop" id="sopModalBackdrop" hidden></div>
+  <div class="sop-print-modal" id="sopPrintModal" hidden>
+    <div class="sop-print-modal-header">
+      <span class="sop-print-modal-title">Choose Print Size</span>
+      <button class="modal-close-btn" id="sopModalCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    <div class="sop-print-modal-body">
+      <button class="sop-size-btn" id="printLetterBtn" type="button">
+        <span class="sop-size-btn-icon" aria-hidden="true">&#128196;</span>
+        <span class="sop-size-btn-label">Full Page</span>
+        <span class="sop-size-btn-desc">Letter 8.5 &times; 11 — checkboxes &amp; initials column</span>
+      </button>
+      <button class="sop-size-btn" id="printIndexBtn" type="button">
+        <span class="sop-size-btn-icon" aria-hidden="true">&#128195;</span>
+        <span class="sop-size-btn-label">Index Card</span>
+        <span class="sop-size-btn-desc">4 &times; 6 — compact bullet list, pocket-sized</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden print container -->
+  <div id="printContainer" aria-hidden="true"></div>
+
+  <!-- Success toast -->
+  <div class="toast" id="toast" hidden aria-live="polite"></div>
+
+  <script src="/menu.js"></script>
+  <script src="/management.js"></script>
+</body>
+</html>

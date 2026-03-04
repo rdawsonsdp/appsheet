@@ -29,9 +29,26 @@
 
   <!-- Top Navigation -->
   <nav class="top-nav" role="banner">
-    <a href="/index.html" class="nav-link" aria-label="Back to Orders">← Orders</a>
-    <h1>Template Designer</h1>
-    <a href="/shift-planning.html" class="nav-link">Shift Planning</a>
+    <div class="nav-brand">
+      <span class="nav-brand-name">Brown Sugar Bakery</span>
+      <span class="nav-brand-sub">Template Designer</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+      <span class="menu-toggle-icon"></span>
+    </button>
+  </nav>
+
+  <!-- Menu Drawer -->
+  <div class="menu-backdrop" id="menuBackdrop"></div>
+  <nav class="menu-drawer" id="menuDrawer" aria-label="Main navigation">
+    <div class="menu-drawer-header">
+      <span class="menu-drawer-title">Brown Sugar Bakery</span>
+      <button class="menu-close-btn" id="menuCloseBtn" aria-label="Close menu">&#10005;</button>
+    </div>
+    <ul class="menu-list">
+      <li><a href="/" class="menu-item">Orders</a></li>
+      <li><a href="/management.html" class="menu-item">Management</a></li>
+    </ul>
   </nav>
 
   <!-- Designer Layout (tabs on mobile, split on large screens) -->
@@ -111,6 +128,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
 
+  <script src="/menu.js"></script>
   <script src="/designer.js"></script>
 </body>
 </html>
