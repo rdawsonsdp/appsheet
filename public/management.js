@@ -232,10 +232,20 @@ function renderRunbooksView() {
 
   const sorted = [...stations].sort((a, b) => a.sortOrder - b.sortOrder);
 
+  // Jump-nav pill bar
+  const jumpNav = document.createElement('nav');
+  jumpNav.className = 'sop-jump-nav';
+  jumpNav.setAttribute('aria-label', 'Jump to station');
+  jumpNav.innerHTML = sorted.map(s =>
+    `<button class="sop-jump-pill" type="button" data-station="${s.id}">${escHtml(s.name)}</button>`
+  ).join('');
+  runbooksList.appendChild(jumpNav);
+
   sorted.forEach(station => {
     const totalTasks = station.sections.reduce((sum, s) => sum + s.tasks.length, 0);
     const section = document.createElement('div');
     section.className = 'house-section';
+    section.id = `station-${station.id}`;
     section.innerHTML = `
       <div class="sop-station-header-row">
         <button class="house-toggle" aria-expanded="true" data-station="${station.id}">
@@ -262,6 +272,16 @@ function renderRunbooksView() {
       </div>
     `;
     runbooksList.appendChild(section);
+  });
+
+  // Bind jump-nav pills
+  jumpNav.querySelectorAll('.sop-jump-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(`station-${btn.dataset.station}`);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   });
 
   // Bind collapsible toggles
